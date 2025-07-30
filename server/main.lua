@@ -195,9 +195,27 @@ lib.callback.register('qbx_garages:server:isParkable', function(source, garage, 
     return isParkable(source, vehicleId, garage)
 end)
 
+-- Sistema simplificado de distância - só rastreia posição inicial
+local vehicleSpawnPositions = {} -- Tabela para armazenar posição inicial dos veículos
+
+-- Função para calcular distância total de um veículo baseado na posição inicial vs atual
+local function calculateVehicleDistance(netId)
+    local vehicle = NetworkGetEntityFromNetworkId(netId)
+    if not DoesEntityExist(vehicle) or not vehicleSpawnPositions[netId] then
+        return 0
+    end
+    
+    local currentPos = GetEntityCoords(vehicle)
+    local spawnPos = vehicleSpawnPositions[netId]
+    local distance = #(currentPos - spawnPos)
+    
+    -- Retornar distância em metros, arredondada
+    return math.floor(distance)
+end
+
 ---@param source number
 ---@param netId number
----@param props table ox_lib vehicle props https://github.com/communityox/ox_lib/blob/master/resource/vehicleProperties/client.lua#L3
+---@param props table ox_lib vehicle props https://github.com/overextended/ox_lib/blob/master/resource/vehicleProperties/client.lua#L3
 ---@param garage string
 lib.callback.register('qbx_garages:server:parkVehicle', function(source, netId, props, garage)
     assert(Garages[garage] ~= nil, string.format('Garage %s not found. Did you register this garage?', garage))
@@ -209,13 +227,45 @@ lib.callback.register('qbx_garages:server:parkVehicle', function(source, netId, 
         return
     end
 
+    -- Calcular distância percorrida nesta sessão
+    local sessionDistance = calculateVehicleDistance(netId)
+    
+    -- Obter distância total atual do banco
+    local currentVehicleData = exports.qbx_vehicles:GetPlayerVehicle(vehicleId)
+    local currentTotalDistance = currentVehicleData and currentVehicleData.total_distance or 0
+    
+    -- Calcular nova distância total
+    local newTotalDistance = currentTotalDistance
+    if sessionDistance > 10 and sessionDistance < 50000 then -- Entre 10m e 50km por sessão
+        newTotalDistance = currentTotalDistance + sessionDistance
+    end
+    
+    -- Salvar veículo com nova distância
     exports.qbx_vehicles:SaveVehicle(vehicle, {
         garage = garage,
         state = VehicleState.GARAGED,
-        props = props
+        props = props,
+        total_distance = newTotalDistance
     })
 
+    -- Remover da tabela de posições
+    vehicleSpawnPositions[netId] = nil
+    
+    -- Log apenas se houve distância significativa
+    if sessionDistance > 10 then
+        lib.print.info(string.format('Veículo %s guardado. Distância da sessão: %d m, Total: %d m', 
+            props.plate or 'N/A', sessionDistance, newTotalDistance))
+    end
+
     exports.qbx_core:DeleteVehicle(vehicle)
+end)
+
+-- Event para registrar posição inicial quando veículo é spawnado
+RegisterNetEvent('qbx_garages:server:registerVehicleSpawn', function(netId)
+    local vehicle = NetworkGetEntityFromNetworkId(netId)
+    if DoesEntityExist(vehicle) then
+        vehicleSpawnPositions[netId] = GetEntityCoords(vehicle)
+    end
 end)
 
 AddEventHandler('onResourceStart', function(resource)
@@ -223,5 +273,11 @@ AddEventHandler('onResourceStart', function(resource)
     Wait(100)
     if Config.autoRespawn then
         Storage.moveOutVehiclesIntoGarages()
+    end
+end)
+
+AddEventHandler('onResourceStop', function(resourceName)
+    if resourceName == GetCurrentResourceName() then
+        vehicleSpawnPositions = {}
     end
 end)

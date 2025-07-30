@@ -3,12 +3,18 @@
 # qbx_garages
 Provides an API to store and retrieve vehicles from various locations around the map. Also includes an optional built-in UI
 
+# Refatored
+
+- Redesigned the way vehicles are removed from the garage (using ox_radial).
+- Installed a vehicle preview system.
+- KMkm/h system in development.
+
 ## Features
 
 ### Built-in UI
 Optionally disabled via config. Created using ox_lib
 
-Configurable Markers Denote the pickup and drop off points
+Configurable Markers Denote the pickup and drop off points, now at the same point to pick up and drop off vehicles with vehicle preview
 ![Markers](.github/example-markers.png)
 
 ### Export & Callback API

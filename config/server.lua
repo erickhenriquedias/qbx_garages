@@ -41,6 +41,7 @@ return {
         motelgarage = {
             label = 'Motel Parking',
             vehicleType = VehicleType.CAR,
+            shared = false, -- Garagem individual (cada player vê apenas seus veículos)
             accessPoints = {
                 {
                     blip = {
@@ -49,13 +50,25 @@ return {
                         color = 3,
                     },
                     coords = vec4(275.58, -344.74, 45.17, 70.0),
-                    spawn = vec4(271.26, -342.32, 44.7, 159.97),
+                },
+                {
+                    coords = vec4(280.12, -348.23, 45.17, 70.0),
+                },
+                {
+                    coords = vec4(284.67, -351.71, 45.17, 70.0),
+                },
+                {
+                    coords = vec4(289.21, -355.20, 45.17, 70.0),
+                },
+                {
+                    coords = vec4(293.75, -358.68, 45.17, 70.0),
                 }
             },
         },
         sapcounsel = {
             label = 'San Andreas Parking',
             vehicleType = VehicleType.CAR,
+            shared = false, -- Garagem individual
             accessPoints = {
                 {
                     blip = {
@@ -64,13 +77,25 @@ return {
                         color = 3,
                     },
                     coords = vec4(-330.67, -781.12, 33.96, 40.46),
-                    spawn = vec4(-337.11, -775.34, 33.56, 132.09),
+                },
+                {
+                    coords = vec4(-334.12, -785.67, 33.96, 40.46),
+                },
+                {
+                    coords = vec4(-337.56, -790.23, 33.96, 40.46),
+                },
+                {
+                    coords = vec4(-341.01, -794.78, 33.96, 40.46),
+                },
+                {
+                    coords = vec4(-344.45, -799.34, 33.96, 40.46),
                 }
             },
         },
         spanishave = {
             label = 'Spanish Ave Parking',
             vehicleType = VehicleType.CAR,
+            shared = false, -- Garagem individual
             accessPoints = {
                 {
                     blip = {
@@ -79,7 +104,18 @@ return {
                         color = 3,
                     },
                     coords = vec4(-1160.46, -741.04, 19.95, 41.26),
-                    spawn = vec4(-1165.38, -747.65, 18.94, 40.45),
+                },
+                {
+                    coords = vec4(-1164.12, -745.32, 19.95, 41.26),
+                },
+                {
+                    coords = vec4(-1167.78, -749.60, 19.95, 41.26),
+                },
+                {
+                    coords = vec4(-1171.44, -753.88, 19.95, 41.26),
+                },
+                {
+                    coords = vec4(-1175.10, -758.16, 19.95, 41.26),
                 }
             },
         },
@@ -94,8 +130,19 @@ return {
                         color = 3,
                     },
                     coords = vec4(68.08, 13.15, 69.21, 160.44),
-                    spawn = vec4(72.61, 11.72, 68.47, 157.59),
                 },
+                {
+                    coords = vec4(72.34, 16.78, 69.21, 160.44),
+                },
+                {
+                    coords = vec4(76.60, 20.41, 69.21, 160.44),
+                },
+                {
+                    coords = vec4(80.86, 24.04, 69.21, 160.44),
+                },
+                {
+                    coords = vec4(85.12, 27.67, 69.21, 160.44),
+                }
             },
         },
         littleseoul = {
@@ -451,6 +498,24 @@ return {
                     coords = vec4(-772.71, -1431.11, 1.6, 48.03),
                     spawn = vec4(-729.77, -1355.49, 1.19, 142.5),
                 }
+            },
+        },
+
+        -- Exemplo de Garagem Compartilhada (para gangues/empresas)
+        shared_example = {
+            label = 'Garagem Compartilhada - Exemplo',
+            vehicleType = VehicleType.CAR,
+            shared = true, -- TODOS na garagem podem ver TODOS os veículos
+            groups = {'police', 'ambulance'}, -- Apenas police e ambulance podem acessar
+            accessPoints = {
+                {
+                    blip = {
+                        name = 'Shared Garage',
+                        sprite = 357,
+                        color = 2,
+                    },
+                    coords = vec4(445.0, -1024.0, 28.6, 90.0),
+                },
             },
         },
     },

@@ -71,6 +71,9 @@ lib.callback.register('qbx_garages:server:spawnVehicle', function (source, vehic
     local warpPed = Config.warpInVehicle and GetPlayerPed(source)
     local netId, veh = qbx.spawnVehicle({ spawnSource = spawnCoords, model = playerVehicle.props.model, props = playerVehicle.props, warp = warpPed})
 
+    -- Aplicar estado completo do veículo (danos, portas quebradas, etc.)
+    TriggerClientEvent('qbx_garages:client:applyCompleteVehicleState', source, netId, playerVehicle.props)
+
     if Config.doorsLocked then
         if GetResourceState('qbx_vehiclekeys') == 'started' then
             TriggerEvent('qb-vehiclekeys:server:setVehLockState', netId, 2)
@@ -83,6 +86,26 @@ lib.callback.register('qbx_garages:server:spawnVehicle', function (source, vehic
 
     Entity(veh).state:set('vehicleid', vehicleId, false)
     setVehicleStateToOut(vehicleId, veh, playerVehicle.modelName)
+    
+    -- Registrar posição inicial do veículo para cálculo de distância
+    TriggerEvent('qbx_garages:server:registerVehicleSpawn', netId)
+    
+    -- Registrar log de quem retirou o veículo
+    local player = exports.qbx_core:GetPlayer(source)
+    if player then
+        MySQL.update('UPDATE player_vehicles SET last_pulled_by = ?, last_pulled_at = NOW() WHERE id = ?', {
+            player.PlayerData.citizenid,
+            vehicleId
+        })
+        
+        -- Log para console/webhook
+        local logMessage = string.format('Veículo %s (ID: %s) foi retirado da garagem %s por %s (%s)', 
+            playerVehicle.props.plate, vehicleId, garageName, 
+            player.PlayerData.charinfo.firstname .. ' ' .. player.PlayerData.charinfo.lastname, 
+            player.PlayerData.citizenid)
+        lib.logger(source, 'VehiclePull', logMessage)
+    end
+    
     TriggerEvent('qbx_garages:server:vehicleSpawned', veh)
     return netId
 end)
